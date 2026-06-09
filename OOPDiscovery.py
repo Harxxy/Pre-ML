@@ -1,5 +1,8 @@
 import random
 
+difficulty = 0
+difficulty_list = ["goblin", "goblin", "goblin", "orc", "orc", "orc", "goblin", "dragon", "orc", "dragon", "dragon", "dragon"]
+
 class Character:
 
     def __init__(self, name, hp, max_hp, attack, defense):
@@ -31,7 +34,7 @@ class Character:
             self.hp = self.max_hp
     
     def basic_attack(self):
-        return (attack, False, False)
+        return (self.attack, False, False)
     
     def gain_xp(self, amount):
         self.xp += amount
@@ -54,9 +57,6 @@ class Warrior(Character):
         super().__init__(name, hp, max_hp, attack, defense)
         self.archetype = "warrior"
         self.bash_cooldown = 0
-
-    def __str__(self):
-        return f"Warrior {self.name} | HP : {self.hp}/{self.max_hp} | ATT : {self.attack} | DEF : {self.defense}"
     
     def attack_set(self):
         print(" 1. Sword Strike (Base Attack)")
@@ -68,7 +68,7 @@ class Warrior(Character):
     def special_attack(self):
         if self.bash_cooldown == 0:
             a = random.randint(1, 10)
-            damage = int(1.5*self.attack)
+            damage = int((1.5*self.attack)//1)
             enemy_stunned = (a < 4)
             self.bash_cooldown += 2
             ignores_armor = False
@@ -116,9 +116,6 @@ class Ranger(Character):
         self.archetype = "ranger"
         self.precise_shot_cooldown = 0
 
-    def __str__(self):
-        return f"Ranger {self.name} | HP : {self.hp}/{self.max_hp} | ATT : {self.attack} | DEF : {self.defense}"
-
     def attack_set(self):
         print(" 1. Shoot (Base Attack)")
         if self.precise_shot_cooldown == 0:
@@ -150,11 +147,11 @@ class Enemy(Character):
 
     def enemy(enemy_string):
         if enemy_string == "goblin":
-            return Enemy("Goblin", 30, 30, 6, 0, 10)
+            return Enemy("Goblin", 30, 30, 12, 0, 10)
         elif enemy_string == "orc":
-            return Enemy("Orc", 60, 60, 12, 5, 30)
+            return Enemy("Orc", 60, 60, 24, 10, 30)
         elif enemy_string == "dragon":
-            return Enemy("Dragon", 90, 90, 24, 10, 60)
+            return Enemy("Dragon", 90, 90, 48, 20, 60)
         else:
             print("No such enemy found.")
 
@@ -207,27 +204,60 @@ def dragon_intro():
     input("The Dragon tilts its enormous head, as if genuinely curious whether you'll be interesting.       ")
     input("No pressure.                                                                                      ")
 
+def congratulations_message():
+    input("\nPress Enter to hear from our special guest...")
+    print("\nWell I'll be damned... FOUR Goblins? FOUR Orcs? And FOUR Dragons?!")
+    
+    input("\nPress Enter to continue...")
+    print("In my 84 years I have never seen such slaughter. My grandson fought ONE Goblin in '97. We don't talk about '97.")
+    
+    input("\nPress Enter to continue...")
+    print("You know, when I was your age, we didn't HAVE heroes like you. We had Gerald. Gerald tripped over a Goblin and that was the end of that.")
+    
+    input("\nPress Enter to continue...")
+    print("FOUR Dragons. Do you understand what you've done? The SMELL alone should have killed you. I once stood near a Dragon and lost three toes. THREE.")
+    
+    input("\nPress Enter to continue...")
+    print("I want you to know, young one, that this victory means everything. To me. To this village. To Gerald's memory. To my three remaining toes.")
+    
+    input("\nPress Enter to continue...")
+    print("You have restored honour to these lands and I — I just — my heart is so full right now I could just—")
+    
+    input("\nPress Enter to continue...")
+    print("...hm.")
+    print("...hm.")
+    print("...anyway you should probably loot the Dragons. All four of them.")
+    print("\n*dies*")
+    print("*the cause of death is later reported as 'too much honour witnessed in one sitting'*")
+
 def fight(enemy_string):
     monster = Enemy.enemy(enemy_string)
     monster_stunned = False
     while player.is_alive() and monster.is_alive():
-        player.__str__()
+        print("                                                                                                                             ")
+        print(player.__str__())
         print("                                                                                                                         ")
-        monster.__str__()
+        print(monster.__str__())
         print("                                                                                                                         ")
 
         player.attack_set()
-        player_attack_choice = input("Enter your move: ")
+        player_attack_choice = input("Enter your move(1/2): ")
 
         while True:
             if player_attack_choice == "1":
-                damage_dealt, monster_stunned = monster.take_damage(player.basic_attack())
+                damage, stunned, penetrated = player.basic_attack()
+                damage_dealt, monster_stunned = monster.take_damage(damage, stunned, penetrated)
                 print(f"You strike {monster.name} for {damage_dealt} damage.")
+                if player_class_choice == "1":
+                    player.bash_cooldown = max(0, player.bash_cooldown - 1)
+                elif player_class_choice == "3":
+                    player.precise_shot_cooldown = max(0, player.precise_shot_cooldown - 1)
                 if monster_stunned:
                     print(f"{monster.name} is stunned!")
                 break
             elif player_attack_choice == "2":
-                damage_dealt, monster_stunned = monster.take_damage(player.special_attack())
+                damage, stunned, penetrated = player.special_attack()
+                damage_dealt, monster_stunned = monster.take_damage(damage, stunned, penetrated)
                 if player_class_choice == "1":
                     print(f"You slam your shield into {monster.name} for {damage_dealt} damage!")
                 elif player_class_choice ==  "2":
@@ -239,18 +269,26 @@ def fight(enemy_string):
                 break
             else:
                 print("Invalid input. Try again.")
+                player_attack_choice = input("Enter your move(1/2): ")
         
-        input("Press Enter to Continue")
-        if monster_stunned:
-            print(f"{monster.name} is stunned and skips their turn!")
-            monster_stunned = False
+        print("                                                                                                     ")
+        if monster.is_alive():
+            input("Press Enter to Continue")
+            if monster_stunned:
+                print(f"{monster.name} is stunned and skips their turn!")
+                print("                                                                                                             ")
+                monster_stunned = False
+            else:
+                damage, stunned, penetrated = monster.basic_attack()
+                damage_dealt, _ = player.take_damage(damage, stunned, penetrated)  
+                print(f"{monster.name} strikes you for {damage_dealt} damage.")
+                print("                                                                                             ")
+
         else:
-            damage_dealt, _ = player.take_damage(monster.basic_attack())  
-            print(f"{monster.name} strikes you for {damage_dealt} damage.")
-    if player.is_alive():
-        print(f"{monster.name} has been defeated!")
-        player.gain_xp(monster.xp_reward)
-    else:
+            print(f"{monster.name} has been defeated!")
+            player.gain_xp(monster.xp_reward)
+            
+    if not player.is_alive():
         print(f"You have been slain by {monster.name}. Game over.")
        
 print("You venture into the abandoned castle to get hold of the enormous treasures within only to be stormed by hordes of monsters...")
@@ -290,3 +328,21 @@ while True:
 
 input("Right then. The castle awaits. Try not to die on the first floor, it'd be terribly embarrassing. ")
 
+while player.is_alive():
+    if difficulty == 0:
+        goblin_intro()
+    elif difficulty == 3:
+        orc_intro()
+        player.heal()
+    elif difficulty == 7:
+        dragon_intro()
+        player.heal()
+    elif difficulty == 12:
+        congratulations_message()
+        print(player)
+        print("You win!")
+        break
+    else:
+        player.heal()
+    fight(difficulty_list[difficulty])
+    difficulty += 1
