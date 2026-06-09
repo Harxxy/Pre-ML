@@ -15,7 +15,10 @@ class Character:
         self.level = 1
     
     def take_damage(self, amt, stunned, penetrated):
-        if penetrated:
+        if amt == 0:
+            actual_damage = 0
+            print("Attack failed, leading to 0 damage.")
+        elif penetrated:
             actual_damage = amt
         else:
             actual_damage = max(1, amt - self.defense)
@@ -44,9 +47,11 @@ class Character:
             self.heal()
             print(f"{self.name} leveled up and healed!")
             self.max_hp *= 1.05
-            self.max_hp = self.max_hp//1
+            self.max_hp = int(self.max_hp)
             self.attack += 1
             self.defense += 1
+            if self.archetype == "mage":
+                self.mana += 50
 
     def __str__(self):
         return f"{self.name} | HP : {self.hp}/{self.max_hp} | ATT : {self.attack} | DEF : {self.defense} | LVL : {self.level} | XP : {self.xp}/100"
@@ -85,11 +90,6 @@ class Mage(Character):
 
     def __str__(self):
         return f"Mage {self.name} | HP : {self.hp}/{self.max_hp} | ATT : {self.attack} | DEF : {self.defense} | MANA : {self.mana} | LVL : {self.level} | XP : {self.xp}/100"
-
-
-    def gain_xp(self, amount):
-        super().gain_xp(amount)
-        self.mana += 50
 
     def attack_set(self):
         print(" 1. Wand Strike (Base Attack)")
@@ -248,9 +248,9 @@ def fight(enemy_string):
                 damage, stunned, penetrated = player.basic_attack()
                 damage_dealt, monster_stunned = monster.take_damage(damage, stunned, penetrated)
                 print(f"You strike {monster.name} for {damage_dealt} damage.")
-                if player_class_choice == "1":
+                if player.archetype == "warrior":
                     player.bash_cooldown = max(0, player.bash_cooldown - 1)
-                elif player_class_choice == "3":
+                elif player.archetype == "ranger":
                     player.precise_shot_cooldown = max(0, player.precise_shot_cooldown - 1)
                 if monster_stunned:
                     print(f"{monster.name} is stunned!")
@@ -258,12 +258,15 @@ def fight(enemy_string):
             elif player_attack_choice == "2":
                 damage, stunned, penetrated = player.special_attack()
                 damage_dealt, monster_stunned = monster.take_damage(damage, stunned, penetrated)
-                if player_class_choice == "1":
+                if player.archetype == "warrior":
                     print(f"You slam your shield into {monster.name} for {damage_dealt} damage!")
-                elif player_class_choice ==  "2":
+                elif player.archetype ==  "mage":
                     print(f"You hurl a fireball at {monster.name} for {damage_dealt} damage!")
-                elif player_class_choice == "3":
-                    print(f"You line up a precise shot on {monster.name} for {damage_dealt} damage!")
+                elif player.archetype == "ranger":
+                    if player.precise_shot_cooldown > 0:
+                        print(f"You try lining up a precise shot, but fail and deal {damage_dealt} damage to {monster.name}.")
+                    else:
+                        print(f"You line up a precise shot on {monster.name} for {damage_dealt} damage!")
                 if monster_stunned:
                     print(f"{monster.name} is stunned!")
                 break
