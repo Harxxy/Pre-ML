@@ -249,6 +249,7 @@ def fight(enemy_string):
             print(f"{monster.name} strikes you for {damage_dealt} damage.")
     if player.is_alive():
         print(f"{monster.name} has been defeated!")
+        player.gain_xp(monster.xp_reward)
     else:
         print(f"You have been slain by {monster.name}. Game over.")
        
@@ -288,5 +289,4 @@ while True:
         print("Eh? What was that? I couldn't hear ya.")
 
 input("Right then. The castle awaits. Try not to die on the first floor, it'd be terribly embarrassing. ")
-
 
