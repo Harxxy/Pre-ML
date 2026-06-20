@@ -150,3 +150,4 @@ class LinkedList:
                 pointer = pointer.next
                 string = string + str(pointer.value)
             return string
+
