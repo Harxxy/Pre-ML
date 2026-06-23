@@ -1,8 +1,8 @@
-from LinkedList.py import LinkedList
+from LinkedList import LinkedList
 
-class deque():
+class Deque():
 
-    def __init__(self, data):
+    def __init__(self):
         self.data = LinkedList()
     
     def enqueue(self, x):
@@ -10,34 +10,30 @@ class deque():
 
     def dequeue(self):
         if self.data.size() == 0:
-            return "Empty Queue"
-        else:
-            front = self.data.head
-            self.data.delete_head()
-            return front
+            raise IndexError("dequeue from empty queue")
+        front = self.data.head.value
+        self.data.delete_head()
+        return front
 
-    def peak_front(self):
+    def peek_front(self):
         if self.data.size() == 0:
-            return "Empty Queue"
-        else:
-            return self.data.head
+            raise IndexError("peek from empty queue")
+        return self.data.head.value
 
-    def peak_back(self):
+    def peek_back(self):
         if self.data.size() == 0:
-            return "Empty Queue"
-        else:
-            return self.data.tail
+            raise IndexError("peek from empty queue")
+        return self.data.tail.value
 
     def push_front(self, x):
         self.data.insert_head(x)
 
     def pop_back(self):
         if self.data.size() == 0:
-            return "Empty Queue"
-        else:
-            back = self.data.tail
-            self.data.delete_tail()
-            return back
+            raise IndexError("pop from empty queue")
+        back = self.data.tail.value
+        self.data.delete_tail()
+        return back
 
-    def is_empty():
-        retrun self.data.size == 0
+    def is_empty(self):
+        return self.data.size() == 0
